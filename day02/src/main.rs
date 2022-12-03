@@ -78,6 +78,6 @@ fn score_single_round(opponent: Shape, you: Shape) -> u32 {
 
 fn main() {
     let input = fs::read_to_string("input.txt").unwrap();
-    println!("strategy1:{:?}", score1(&input));
-    println!("strategy1:{:?}", score2(&input));
+    println!("score1:{:?}", score1(&input));
+    println!("score2:{:?}", score2(&input));
 }
