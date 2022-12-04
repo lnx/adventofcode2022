@@ -12,7 +12,7 @@ fn puzzle1(input: &str) -> u32 {
 }
 
 fn puzzle2(input: &str) -> u32 {
-    input.lines().collect::<Vec<_>>().chunks_exact(3)// no remainder
+    input.lines().collect::<Vec<_>>().chunks_exact(3) // no remainder
         .map(|group| {
             let badge = group.iter()
                 .map(|line| line.chars().collect::<HashSet<_>>())
