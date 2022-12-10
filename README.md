@@ -38,5 +38,4 @@ fn main() {
     println!("puzzle1:{:?}", puzzle1(&input));
     println!("puzzle2:{:?}", puzzle2(&input));
 }
-
 ```
