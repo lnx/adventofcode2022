@@ -7,11 +7,11 @@ https://adventofcode.com/2022/about
 ```rust
 use std::fs;
 
-fn puzzle1(input: &str) -> u32 {
+fn puzzle1(_input: &str) -> u32 {
     0
 }
 
-fn puzzle2(input: &str) -> u32 {
+fn puzzle2(_input: &str) -> u32 {
     0
 }
 
