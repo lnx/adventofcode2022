@@ -1,54 +1,34 @@
 extern crate core;
 
 use std::cmp::max;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fs;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
 struct Sensor {
-    x: i64,
-    y: i64,
+    sx: i64,
+    sy: i64,
+    bx: i64,
+    by: i64,
+    md: i64,
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct Beacon {
-    x: i64,
-    y: i64,
+fn parse(input: &str) -> Vec<Sensor> {
+    input.lines().map(|l| {
+        let mut it = l.split(|c: char| !c.is_digit(10) && c != '-').filter_map(|w| w.parse::<i64>().ok());
+        let sx = it.next().unwrap();
+        let sy = it.next().unwrap();
+        let bx = it.next().unwrap();
+        let by = it.next().unwrap();
+        let md = (sx - bx).abs() + (sy - by).abs();
+        Sensor { sx, sy, bx, by, md }
+    }).collect()
 }
 
-fn parse(input: &str) -> HashMap<Sensor, Beacon> {
-    input.lines().map(|l| parse_pair(l)).collect()
-}
-
-fn parse_pair(input: &str) -> (Sensor, Beacon) {
-    let (s, b) = input.trim_start_matches("Sensor at ").split_once(": closest beacon is at ").unwrap();
-    let s = parse_position(s);
-    let b = parse_position(b);
-    (Sensor { x: s.0, y: s.1 }, Beacon { x: b.0, y: b.1 })
-}
-
-// x=1, y=2
-fn parse_position(input: &str) -> (i64, i64) {
-    let (x, y) = input.split_once(", ").unwrap();
-    let x = x.trim_start_matches("x=").parse::<i64>().unwrap();
-    let y = y.trim_start_matches("y=").parse::<i64>().unwrap();
-    (x, y)
-}
-
-fn distance_manhattan(s: &Sensor, b: &Beacon) -> i64 {
-    (s.x - b.x).abs() + (s.y - b.y).abs()
-}
-
-fn calculate_coverage(map: &HashMap<Sensor, Beacon>, y: i64) -> Vec<(i64, i64)> {
-    let mut ranges = map.iter().flat_map(|(s, b)| {
-        let distance_y = (s.y - y).abs();
-        let distance_m = distance_manhattan(s, b);
-        if distance_y <= distance_m {
-            let distance_x = distance_m - distance_y;
-            Some((s.x - distance_x, s.x + distance_x))
-        } else {
-            None
-        }
+fn calculate_coverage(sensors: &Vec<Sensor>, y: i64) -> Vec<(i64, i64)> {
+    let mut ranges = sensors.iter().flat_map(|s| {
+        let left = s.md - (s.sy - y).abs();
+        if left >= 0 { Some((s.sx - left, s.sx + left)) } else { None }
     }).collect::<Vec<_>>();
     ranges.sort_unstable();
 
@@ -68,28 +48,25 @@ fn calculate_coverage(map: &HashMap<Sensor, Beacon>, y: i64) -> Vec<(i64, i64)> 
 }
 
 fn puzzle1(input: &str, y: i64) -> i64 {
-    let map = parse(input);
-    let covered_ranges = calculate_coverage(&map, y);
-    let beacons = map.iter().map(|(_, b)| b).filter(|b| b.y == y).collect::<HashSet<_>>().len();
+    let sensors = parse(input);
+    let covered_ranges = calculate_coverage(&sensors, y);
+    let beacons = sensors.iter().filter(|s| s.by == y).map(|s| (s.bx, s.by)).collect::<HashSet<_>>().len();
     covered_ranges.iter().map(|r| r.1 - r.0 + 1).sum::<i64>() - beacons as i64
 }
 
 fn puzzle2(input: &str, upper_bound: i64) -> i64 {
-    let map = parse(input);
-    for y in 0..=upper_bound {
-        let covered_ranges = calculate_coverage(&map, y);
-        for r in &covered_ranges {
-            if r.1 < 0 { // ignore
-                continue;
-            }
-            if r.0 > upper_bound { // no result
-                break;
-            }
-            if r.0 > 0 {
-                return (r.0 - 1) * 4000000 + y;
-            }
-            if r.1 < upper_bound {
-                return (r.1 + 1) * 4000000 + y;
+    let sensors = parse(input);
+    for s in &sensors {
+        for (dx, dy) in [(-1, -1), (-1, 1), (1, -1), (1, 1)] {
+            for distance in 0..=(s.md + 1) {
+                let bx = s.sx + dx * distance;
+                let by = s.sy + dy * (s.md + 1 - distance);
+                if bx < 0 || bx >= upper_bound || by < 0 || by >= upper_bound {
+                    continue;
+                }
+                if sensors.iter().all(|s| (s.sx - bx).abs() + (s.sy - by).abs() > s.md) {
+                    return bx * 4000000 + by;
+                }
             }
         }
     }
