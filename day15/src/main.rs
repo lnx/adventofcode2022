@@ -1,5 +1,3 @@
-extern crate core;
-
 use std::cmp::max;
 use std::collections::HashSet;
 use std::fs;
