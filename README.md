@@ -32,7 +32,6 @@ mod tests {
     }
 }
 
-
 fn main() {
     let input = fs::read_to_string("input.txt").unwrap();
     println!("puzzle1:{:?}", puzzle1(&input));
