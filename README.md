@@ -33,7 +33,7 @@ mod tests {
 }
 
 fn main() {
-    let input = fs::read_to_string("input_test.txt").unwrap();
+    let input = fs::read_to_string("input.txt").unwrap();
     println!("puzzle1:{:?}", puzzle1(&input));
     println!("puzzle2:{:?}", puzzle2(&input));
 }
